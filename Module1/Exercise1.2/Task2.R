@@ -22,22 +22,7 @@ library(dplyr)
 # DATASET3 = ID: num, code: chr (e.g. "DE119", "CM819"), date_diag: Date
 # ------------------------
 
-
-# Convert date columns to Date format
-DATASET1$prostdtfirst <- as.Date(DATASET1$prostdtfirst)
-DATASET1$date_met <- as.Date(DATASET1$date_met)
-DATASET1$birthdate <- as.Date(DATASET1$birthdate)
-
-# Calculate age at prostate cancer diagnosis
-DATASET1$age_PCD <- as.numeric(difftime(DATASET1$prostdtfirst, DATASET1$birthdate, units = "days")) / 365.25
-
-# Calculate age at metastasis (only for patients with metastasis = 1)
-DATASET1$age_metastasis <- ifelse(DATASET1$metastasis == 1,
-                                  as.numeric(difftime(DATASET1$date_met, DATASET1$birthdate, units = "days")) / 365.25,
-                                  NA)
-
-# Merge the primary datasets by the common 'ID' column.
-FULL_DATA <- merge(DATASET1, DATASET2, by = "ID")
+FULL_DATA <- MERGED_DATA
 
 
 # --- TASK 1: Measures of test performance based on PSA ---
@@ -95,6 +80,8 @@ cutpoint_youden <- optimal.cutpoints(X = "psa", status = "metastasis", tag.healt
                                      methods = "Youden", data = FULL_DATA,
                                      ci.fit = TRUE, conf.level = 0.95, trace = FALSE)
 cat("\n--- Youden Index Method Summary ---\n")
+# Show's best cut off is at 23% sensititivty = True positives, and Specificity = True Negatives
+# AOC seems to be 0.67, which means it is a poor indicator (0.5 being random and 1 being perfect)
 summary(cutpoint_youden)
 plot(cutpoint_youden)
 
@@ -105,6 +92,7 @@ cutpoint_max_spse <- optimal.cutpoints(X = "psa", status = "metastasis", tag.hea
                                        methods = "MaxSpSe", data = FULL_DATA,
                                        ci.fit = TRUE, conf.level = 0.95, trace = FALSE)
 cat("\n--- Max Product of Sp & Se Method Summary ---\n")
+# Show's best cut off at 17 ng/ml
 summary(cutpoint_max_spse)
 plot(cutpoint_max_spse)
 
@@ -114,7 +102,7 @@ plot(cutpoint_max_spse)
 cat("\n\n--- Principal Component Analysis (Task 4) ---\n")
 
 # Define the biomarker columns to be used for PCA
-biomarker_cols <- c("monocyte", "urea", "lymphocyte", "thrombocyte", "albumin", "creatinine", "globulin", "psa", "coag_factor")
+biomarker_cols <- c("monocyte", "urea", "lymphocyte", "thrombocyte", "albumin", "creatinine", "globulin", "psa", "coag_factor", "erythrocyte")
 
 # The prcomp function cannot handle missing values (NA).
 # We must first create a new data frame that excludes any rows with NA in the selected biomarker columns.
@@ -150,7 +138,7 @@ print(pca_model$rotation)
 # Let's say we decide to keep the first 3 Principal Components based on the scree plot and eigenvalues
 num_pcs_to_keep <- 3
 components <- pca_model$x[, 1:num_pcs_to_keep]
-
+print(components)
 # Generate a new dataset by combining the PCs with the cleaned original dataset.
 # This works because both data frames now have the same number of rows.
 FINAL_DATASET <- bind_cols(FULL_DATA_PCA, as.data.frame(components))
@@ -159,6 +147,6 @@ FINAL_DATASET <- bind_cols(FULL_DATA_PCA, as.data.frame(components))
 print(head(FINAL_DATASET))
 
 # Export the final dataset to a CSV file
-# write.csv(FINAL_DATASET, "prostate_cancer_with_pcs.csv", row.names = FALSE)
-# cat("\nFinal dataset with Principal Components has been saved to 'prostate_cancer_with_pcs.csv'\n")
+#write.csv(FINAL_DATASET, "prostate_cancer_with_pcs.csv", row.names = FALSE)
+#cat("\nFinal dataset with Principal Components has been saved to 'prostate_cancer_with_pcs.csv'\n")
 
