@@ -73,6 +73,7 @@ print(performance_summary, row.names = FALSE)
 # --- TASK 3: Using the ROC curve to find the optimal cutoff ---
 
 cat("\n\n--- Optimal Cutoff Analysis (Task 3) ---\n")
+FULL_DATA <- as.data.frame(FULL_DATA)
 
 # Method 1: Youden Index
 # This method maximizes (sensitivity + specificity - 1)
