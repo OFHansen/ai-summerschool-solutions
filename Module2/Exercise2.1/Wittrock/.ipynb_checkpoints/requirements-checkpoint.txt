@@ -1,0 +1,12 @@
+scipy
+seaborn
+scikit-learn
+statsmodels
+pandas
+pyedflib
+h5py
+opencv-python
+medmnist
+pyreadstat
+scikit-image
+scikit-learn
