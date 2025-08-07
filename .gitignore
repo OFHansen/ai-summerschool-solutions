@@ -3,3 +3,6 @@
 .RData
 .Ruserdata
 venv
+
+Pipfile
+Pipfile.lock
