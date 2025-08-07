@@ -1,7 +1,3 @@
-library(readr)
-DATASET1 <- read_csv("Exercise1.1/DATASET1.csv")
-DATASET2 <- read_csv("Exercise1.1/DATASET2.csv")
-DATASET3 <- read_csv("Exercise1.1/DATASET3.csv")
 
 print("TASK 1")
 #TASK 1
