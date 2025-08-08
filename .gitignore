@@ -3,7 +3,12 @@
 .RData
 .Ruserdata
 venv
-
+data-Copy1
+model.pth
+data
+PCData
+*.tif
+*.jpg
 Pipfile
 Neoplasia
 Non-neoplasia
