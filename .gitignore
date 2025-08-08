@@ -5,4 +5,6 @@
 venv
 
 Pipfile
+Neoplasia
+Non-neoplasia
 Pipfile.lock
