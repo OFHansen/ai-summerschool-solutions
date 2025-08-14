@@ -281,9 +281,9 @@ library(dplyr)
 eachfold <- pred_fold %>% group_by(Resample) %>% summarise_at(vars(equal),list(Accuracy = mean))
 print(eachfold)
 # Confusion matrix — make sure both are factors with the same levels
-cm_trained_model <- confusionMatrix(factor(pred_fold$class, levels = c(0,1)),
+cv_conf_matrix <- confusionMatrix(factor(pred_fold$class, levels = c(0,1)),
                                     factor(pred_fold$obs, levels = c(0,1)))
-print(cm_trained_model)
+print(cv_conf_matrix)
 #accuracy = 0.71
 #sens = 0.92
 #spec = 0.34
