@@ -266,67 +266,32 @@ print(p3)
 # =============================================================================
 
 cat("--- TASK 4: 10-Fold Cross-Validation ---\n\n")
+#TASK 4
+print("-----------------------TASK 4------------------------")
 
-# Set up 10-fold cross-validation
-train_control <- trainControl(method = "cv", number = 10, savePredictions = TRUE)
-
-# Set seed for reproducibility
+train.control <- trainControl(method = "cv", number = 10, savePredictions="final") 
 set.seed(123)
+model_for_test <- train(metastasis ~ psa + Type.2.Diabetes + Osteoporosis + Essential.Hypertension + Urinary.Retention, 
+                        data=MERGED_DATA, method = "glm", family = "binomial", trControl = train.control)
+#Inspecting the results for each folder
+pred_fold <- model_for_test$pred
 
-# Get the formula from the selected model
-cv_formula <- formula(step_model)
+pred_fold$class <- ifelse(pred_fold$pred >= 0.5, 1, 0)
+pred_fold$equal <- ifelse(pred_fold$class == pred_fold$obs, 1, 0)
 
-# Train the model with cross-validation
-cv_model <- train(cv_formula, 
-                  data = MERGED_DATA, 
-                  method = "glm", 
-                  family = "binomial",
-                  trControl = train_control)
-
-# Print results
-cat("Cross-Validation Results:\n")
-print(cv_model)
-
-# Get detailed results for each fold
-pred_fold <- cv_model$pred
-pred_fold$equal <- ifelse(pred_fold$pred == pred_fold$obs, 1, 0)
-
-# Calculate accuracy per fold
+#Calculating the accuracy per folder
 library(dplyr)
-eachfold <- pred_fold %>% 
-  group_by(Resample) %>%
-  summarise(Accuracy = mean(equal), .groups = 'drop')
-
-cat("\n--- Accuracy for Each Fold ---\n")
+eachfold <- pred_fold %>% group_by(Resample) %>% summarise_at(vars(equal),list(Accuracy = mean))
 print(eachfold)
-
-# Calculate average accuracy and standard deviation
-avg_accuracy <- mean(eachfold$Accuracy)
-sd_accuracy <- sd(eachfold$Accuracy)
-
-cat("\nAverage CV Accuracy:", round(avg_accuracy, 4), "±", round(sd_accuracy, 4), "\n")
-
-# Check consistency
-cv_range <- max(eachfold$Accuracy) - min(eachfold$Accuracy)
-cat("Range of accuracies:", round(cv_range, 4), "\n")
-
-if(cv_range < 0.05) {
-  cat("The accuracies are quite consistent across folds.\n")
-} else {
-  cat("There is some variability in accuracies across folds.\n")
-}
-
-# Calculate overall CV performance metrics
-cv_pred_factor <- factor(pred_fold$pred, levels = c("0", "1"))
-cv_obs_factor <- factor(pred_fold$obs, levels = c("0", "1"))
-
-cv_conf_matrix <- confusionMatrix(cv_pred_factor, cv_obs_factor, positive = "1")
-
-cat("\n--- Cross-Validation Performance Metrics ---\n")
-cat("CV Accuracy:", round(cv_conf_matrix$overall["Accuracy"], 4), "\n")
-cat("CV Sensitivity:", round(cv_conf_matrix$byClass["Sensitivity"], 4), "\n")
-cat("CV Specificity:", round(cv_conf_matrix$byClass["Specificity"], 4), "\n\n")
-
+# Confusion matrix — make sure both are factors with the same levels
+cm_trained_model <- confusionMatrix(factor(pred_fold$class, levels = c(0,1)),
+                                    factor(pred_fold$obs, levels = c(0,1)))
+print(cm_trained_model)
+#accuracy = 0.71
+#sens = 0.92
+#spec = 0.34
+#pred_fold <- model_for_test$pred 
+#print(pred_fold)
 # Plot 4: Cross-validation accuracy across folds
 cat("Creating cross-validation accuracy plot...\n")
 p4 <- ggplot(eachfold, aes(x = Resample, y = Accuracy)) +
