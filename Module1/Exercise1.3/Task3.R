@@ -266,9 +266,6 @@ print(p3)
 # =============================================================================
 
 cat("--- TASK 4: 10-Fold Cross-Validation ---\n\n")
-#TASK 4
-print("-----------------------TASK 4------------------------")
-
 train.control <- trainControl(method = "cv", number = 10, savePredictions="final") 
 set.seed(123)
 model_for_test <- train(metastasis ~ psa + Type.2.Diabetes + Osteoporosis + Essential.Hypertension + Urinary.Retention, 
@@ -292,6 +289,12 @@ print(cm_trained_model)
 #spec = 0.34
 #pred_fold <- model_for_test$pred 
 #print(pred_fold)
+
+cat("\n--- Cross-Validation Performance Metrics ---\n")
+cat("CV Accuracy:", round(cv_conf_matrix$overall["Accuracy"], 4), "\n")
+cat("CV Sensitivity:", round(cv_conf_matrix$byClass["Sensitivity"], 4), "\n")
+cat("CV Specificity:", round(cv_conf_matrix$byClass["Specificity"], 4), "\n\n")
+
 # Plot 4: Cross-validation accuracy across folds
 cat("Creating cross-validation accuracy plot...\n")
 p4 <- ggplot(eachfold, aes(x = Resample, y = Accuracy)) +
@@ -386,6 +389,31 @@ p6 <- ggplot(coef_data, aes(x = reorder(Variable, Coefficient), y = Coefficient)
                      labels = c("Non-significant", "Significant (p<0.05)"))
 
 print(p6)
+
+cat("Creating coefficient plot for final model...\n")
+coef_data <- data.frame(
+  Variable = names(coef(pc_model))[-1],  # Exclude intercept
+  Coefficient = coef(pc_model)[-1],
+  SE = summary(pc_model)$coefficients[-1, "Std. Error"]
+)
+
+coef_data$Lower <- coef_data$Coefficient - 1.96 * coef_data$SE
+coef_data$Upper <- coef_data$Coefficient + 1.96 * coef_data$SE
+coef_data$Significant <- abs(coef_data$Coefficient) / coef_data$SE > 1.96
+
+p7 <- ggplot(coef_data, aes(x = reorder(Variable, Coefficient), y = Coefficient)) +
+  geom_point(aes(color = Significant), size = 3) +
+  geom_errorbar(aes(ymin = Lower, ymax = Upper, color = Significant), width = 0.2) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
+  labs(title = "Coefficients of Final Logistic Regression Model",
+       subtitle = "Error bars show 95% confidence intervals",
+       x = "Variables", y = "Log Odds (Coefficient)") +
+  theme_minimal() +
+  coord_flip() +
+  scale_color_manual(values = c("FALSE" = "gray60", "TRUE" = "red"),
+                     labels = c("Non-significant", "Significant (p<0.05)"))
+
+print(p7)
 
 cat("\n--- Analysis of Final Model Variables ---\n")
 final_coefficients <- summary(step_model)$coefficients
