@@ -339,7 +339,7 @@ psa100_specificity <- sum(MERGED_DATA$psa_pred_100 == 0 & MERGED_DATA$metastasis
 cat("--- Performance Comparison ---\n")
 comparison_table <- data.frame(
   Method = c("Logistic Regression (Training)", "Logistic Regression (CV)", "PSA >= 20", "PSA >= 100"),
-  Accuracy = c(round(accuracy, 4), round(accuracy, 4), round(psa20_accuracy, 4), round(psa100_accuracy, 4)),
+  Accuracy = c(round(accuracy, 4), round(cv_conf_matrix$overall["Accuracy"], 4), round(psa20_accuracy, 4), round(psa100_accuracy, 4)),
   Sensitivity = c(round(sensitivity, 4), round(cv_conf_matrix$byClass["Sensitivity"], 4), 
                   round(psa20_sensitivity, 4), round(psa100_sensitivity, 4)),
   Specificity = c(round(specificity, 4), round(cv_conf_matrix$byClass["Specificity"], 4), 
